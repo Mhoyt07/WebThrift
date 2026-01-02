@@ -1,5 +1,1 @@
-{
-    "items": [
-        {"file_path": "item_001.jpg", "class": "long sleeve"}
-    ]
-}
+{"items": [{"file_path": "item_001.jpg", "class": "long sleeve"}, {"file_path": "item_002.jpg", "class": "long sleeve"}, {"file_path": "item_002.jpg", "class": "T-shirt"}, {"file_path": "item_004.jpg", "class": "long sleeve"}, {"file_path": "item_004.jpg", "class": "T-shirt"}, {"file_path": "item_006.jpg", "class": "T-shirt"}, {"file_path": "item_007.jpg", "class": "T-shirt", "color": "red"}, {"file_path": "item_008.jpg", "class": "T-shirt", "color": "red"}, {"file_path": "item_009.jpg", "class": "T-shirt", "color": "red"}]}

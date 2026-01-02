@@ -5,6 +5,22 @@ from inference_sdk import InferenceHTTPClient
 from dotenv import load_dotenv
 import os
 import json
+from collections import Counter
+
+def get_dom_color(crop):
+    small_crop = cv2.resize(crop, (50, 50)) #crop resize
+    small_crop = cv2.cvtColor(small_crop, cv2.COLOR_BGR2RGB) #convert to RGB
+    pixels = small_crop.reshape(-1, 3) #reshape to list of pixels
+
+    counts = Counter([tuple(pixel) for pixel in pixels]) #finds most common
+    dominant = counts.most_common(1)[0][0]
+    return dominant
+
+
+
+
+
+
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
@@ -15,7 +31,7 @@ project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
 
 # Test your image
-image_path = "BlueLongSleeve.jpeg"
+image_path = "red.jpeg"
 results = model.predict(image_path, confidence=10, overlap=30)
 
 # Print results
@@ -44,6 +60,52 @@ if results.json()['predictions']:
         
         # Just crop - no drawing
         crop = img[y:y+h, x:x+w]
+
+
+        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv) #split h s v channels
+
+        mask = (s > 50) & (v < 230)
+
+        # If mask removed too much, fallback to whole crop
+        if np.count_nonzero(mask) < 100:
+            mask = np.ones_like(s, dtype=bool)
+
+
+        h_mean = int(np.mean(h[mask]))
+        s_mean = int(np.mean(s[mask]))
+        v_mean = int(np.mean(v[mask]))
+
+        # Convert HSV average to color name
+        if s_mean < 40 and v_mean > 200:
+            color_name = "white"
+        elif h_mean < 10 or h_mean > 160:
+            color_name = "red"
+        elif 10 <= h_mean < 25:
+            color_name = "orange"
+        elif 25 <= h_mean < 35:
+            color_name = "yellow"
+        elif 35 <= h_mean < 85:
+            color_name = "green"
+        elif 85 <= h_mean < 130:
+            color_name = "blue"
+        elif 130 <= h_mean < 160:
+            color_name = "purple"
+        elif s_mean < 40 and v_mean < 100:
+            color_name = "black"
+        else:
+            color_name = "unknown"
+
+        print("Detected color:", color_name)
+
+
+        avg_color_per_row = np.average(crop, axis=0) #avg per row
+        avg_color = np.average(avg_color_per_row, axis=0)
+
+        avg_color = tuple(map(int, avg_color))
+
+
+        print(f"Detected color: {color_name}")
         
         # Save crop
         filename = f"item_{item_num:03d}.jpg"
@@ -56,7 +118,7 @@ if results.json()['predictions']:
 
         detection_data["items"].append({
             "file_path": filename,
-            "class": item['class']})
+            "class": item['class'], "color": color_name,})
         
 else:
     print("No detections - try lower confidence")
