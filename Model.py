@@ -3,6 +3,8 @@ import numpy as np
 from roboflow import Roboflow
 from inference_sdk import InferenceHTTPClient 
 from dotenv import load_dotenv
+from datetime import datetime
+from pymongo import MongoClient
 import os
 import json
 
@@ -15,7 +17,7 @@ project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
 
 # Test your image
-image_path = "BlueLongSleeve.jpeg"
+image_path = "item003.jpeg"
 results = model.predict(image_path, confidence=10, overlap=30)
 
 # Print results
@@ -81,6 +83,27 @@ json_data["items"].extend(new_items)
 with open(data_path, 'w') as f:
     json.dump(json_data, f)
 
+#prunes part:
+client  = MongoClient('mongodb://localhost:27017/')
+db = client.clothes_store
+clothes = db.clothes
+
+img = cv2.imread(image_path)
+cv2.imshow('Original Image', img)
+
+item_id = 0
+
+if results.json()['predictions']:
+    for item in results.json()['predictions']:
+        document = {
+            "ID_no": item_id,
+            "date_added": datetime.now(),
+            "class": item['class'],
+            "image_path": image_path
+            }
+
+        clothes.insert_one(document)
+        print("Inserted document:", document)
 
 
 cv2.waitKey(0)
