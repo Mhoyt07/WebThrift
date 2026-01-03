@@ -16,7 +16,7 @@ project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
 
 # Test your image
-image_path = "red.jpeg"
+image_path = "red.png"
 results = model.predict(image_path, confidence=10, overlap=30)
 
 # Print results
@@ -106,12 +106,12 @@ if results.json()['predictions']:
         # Just crop - no drawing
 
         #from abhi code to test
-        #crop = img[y:y+h, x:x+w]
+        crop = img[y:y+h, x:x+w]
+        #crop = img[y:y2, x:x2]
 
         # Gets dominant color
         dom_color = dominant_color(crop)
 
-        crop = img[y:y2, x:x2]
         
         # Save crop
         filename = f"item_{item_num:03d}.jpg"
