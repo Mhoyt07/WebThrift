@@ -15,7 +15,7 @@ project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
 
 # Test your image
-image_path = "BlueLongSleeve.jpeg"
+image_path = "red.jpeg"
 results = model.predict(image_path, confidence=10, overlap=30)
 
 # Print results
@@ -26,61 +26,71 @@ print(f"Items detected: {len(results.json()['predictions'])}")
 # Load + show image
 img = cv2.imread(image_path)
 cv2.imshow('Original', img)
-detection_data = {"items": []}
-with open("data.json", 'r') as f:
-    data = json.load(f)
 
+# Load existing data
+data_path = "data.json"
+if os.path.exists(data_path):
+    with open(data_path, 'r') as f:
+        data = json.load(f)
+else:
+    data = {"items": []}
+
+detection_data = {"items": []}
 item_num = len(data["items"]) + 1
+
 
 if results.json()['predictions']:
     predictions = results.json()['predictions']
     
     # Crop each item (no boxes/labels)
     for i, item in enumerate(predictions):
+        # Calculate coordinates
         x = int(item['x'] - item['width'] / 2)
         y = int(item['y'] - item['height'] / 2)
         w = int(item['width'])
         h = int(item['height'])
         
+        # Skip if too small (less than 50x50 pixels)
+        if w < 50 or h < 50:
+            print(f"Skipping detection {i+1}: too small ({w}x{h})")
+            continue
+        
+        # Add boundary checking
+        x = max(0, x)
+        y = max(0, y)
+        x2 = min(img.shape[1], x + w)
+        y2 = min(img.shape[0], y + h)
+        
         # Just crop - no drawing
-        crop = img[y:y+h, x:x+w]
+        crop = img[y:y2, x:x2]
         
         # Save crop
         filename = f"item_{item_num:03d}.jpg"
         cv2.imwrite(filename, crop)
-        print(f"Saved: {filename}")
+        print(f"Saved: {filename} - Class: {item['class']}")
         
         # Display crop only
-        cv2.imshow(f'Crop {i+1}', crop)
-
+        cv2.imshow(f"Crop {i+1} - {item['class']}", crop)
 
         detection_data["items"].append({
             "file_path": filename,
-            "class": item['class']})
+            "class": item['class']
+        })
+        
+        item_num += 1  # Increment for next detection
         
 else:
     print("No detections - try lower confidence")
 
-# Add this to your existing code (after crop creation loop)
-
-# Load baseline
-data_path = "data.json"
-items = {}
-# Load existing data
-if os.path.exists(data_path):
-    with open(data_path, 'r') as f:
-        json_data = json.load(f)
-else:
-    json_data = {"items": []}
 
 # Append NEW items only
-new_items = [item for item in detection_data["items"] if item['file_path'] not in [existing_item['file_path'] for existing_item in json_data["items"]]]
-json_data["items"].extend(new_items)
+new_items = [item for item in detection_data["items"] if item['file_path'] not in [existing_item['file_path'] for existing_item in data["items"]]]
+data["items"].extend(new_items)
+
 
 # Save (keeps old + adds new)
 with open(data_path, 'w') as f:
-    json.dump(json_data, f)
-
+    json.dump(data, f, indent=2)
 
 
 cv2.waitKey(0)
