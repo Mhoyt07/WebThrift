@@ -15,7 +15,7 @@ project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
 
 # Test your image
-image_path = "red.jpeg"
+image_path = "images/red.jpeg"
 results = model.predict(image_path, confidence=10, overlap=30)
 
 # Print results
