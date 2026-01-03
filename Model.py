@@ -7,21 +7,6 @@ import os
 import json
 from collections import Counter
 
-def get_dom_color(crop):
-    small_crop = cv2.resize(crop, (50, 50)) #crop resize
-    small_crop = cv2.cvtColor(small_crop, cv2.COLOR_BGR2RGB) #convert to RGB
-    pixels = small_crop.reshape(-1, 3) #reshape to list of pixels
-
-    counts = Counter([tuple(pixel) for pixel in pixels]) #finds most common
-    dominant = counts.most_common(1)[0][0]
-    return dominant
-
-
-
-
-
-
-
 load_dotenv()
 api_key = os.getenv("API_KEY")
 
@@ -31,7 +16,7 @@ project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
 
 # Test your image
-image_path = "red.jpeg"
+image_path = "PruneGreenSweater.jpeg"
 results = model.predict(image_path, confidence=10, overlap=30)
 
 # Print results
@@ -45,6 +30,47 @@ cv2.imshow('Original', img)
 detection_data = {"items": []}
 with open("data.json", 'r') as f:
     data = json.load(f)
+
+BASE_COLORS = {
+    "red": {"max": (255, 80, 80), "min":(150, 0, 0)}, #creates the ranges for every color
+    "green": {"max": (80, 255, 80), "min":(0, 150, 0)},
+    "blue": {"max": (80, 80, 255), "min":(0, 0, 150)},
+    "yellow": {"max": (255, 255, 80), "min":(150, 150, 0)},
+    "orange": {"max": (255, 165, 80), "min":(200, 80, 0)},   
+    "purple": {"max": (255, 80, 255), "min":(100, 0, 100)},
+    "Pink": {"max": (255, 192, 203), "min":(200, 100, 130)},
+    "brown": {"max": (210, 180, 140), "min":(50, 30, 20)},
+    "gray": {"max": (180, 180, 180), "min":(70, 70, 70)},
+    "black": {"min": (0, 0, 0), "max": (50, 50, 50)},
+    "white": {"min": (200, 200, 200), "max": (255, 255, 255)},
+}
+
+def pixel_color(rgb): #assigns a pixel to a color based on the min and max
+    r, g, b = rgb
+    for color_name, bounds in BASE_COLORS.items():
+        min_r, min_g, min_b = bounds["min"]
+        max_r, max_g, max_b = bounds["max"]
+
+        if (min_r <= r <= max_r) and (min_g <= g <= max_g) and (min_b <= b <= max_b):
+            return color_name
+
+def dominant_color(image): #finds the dominant color in the cropped image
+    height, width = image.shape[:2]
+
+    color_counts = Counter()
+
+    for y in range(height):
+        for x in range(width):
+            bgr = image[y, x]
+            rgb = (int(bgr[2]), int(bgr[1]), int(bgr[0]))  # Converting the stupid BGR to RGB
+            color_name = pixel_color(rgb)
+            if color_name:
+                color_counts[color_name] += 1
+        
+    if color_counts:
+        return color_counts.most_common(1)[0][0]
+    else:
+        return "unknown"
 
 item_num = len(data["items"]) + 1
 
@@ -60,69 +86,27 @@ if results.json()['predictions']:
         
         # Just crop - no drawing
         crop = img[y:y+h, x:x+w]
+        dom_color = dominant_color(crop)
 
-
-        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(hsv) #split h s v channels
-
-        mask = (s > 50) & (v < 230)
-
-        # If mask removed too much, fallback to whole crop
-        if np.count_nonzero(mask) < 100:
-            mask = np.ones_like(s, dtype=bool)
-
-
-        h_mean = int(np.mean(h[mask]))
-        s_mean = int(np.mean(s[mask]))
-        v_mean = int(np.mean(v[mask]))
-
-        # Convert HSV average to color name
-        if s_mean < 40 and v_mean > 200:
-            color_name = "white"
-        elif h_mean < 10 or h_mean > 160:
-            color_name = "red"
-        elif 10 <= h_mean < 25:
-            color_name = "orange"
-        elif 25 <= h_mean < 35:
-            color_name = "yellow"
-        elif 35 <= h_mean < 85:
-            color_name = "green"
-        elif 85 <= h_mean < 130:
-            color_name = "blue"
-        elif 130 <= h_mean < 160:
-            color_name = "purple"
-        elif s_mean < 40 and v_mean < 100:
-            color_name = "black"
-        else:
-            color_name = "unknown"
-
-        print("Detected color:", color_name)
-
-
-        avg_color_per_row = np.average(crop, axis=0) #avg per row
-        avg_color = np.average(avg_color_per_row, axis=0)
-
-        avg_color = tuple(map(int, avg_color))
-
-
-        print(f"Detected color: {color_name}")
-        
         # Save crop
         filename = f"item_{item_num:03d}.jpg"
         cv2.imwrite(filename, crop)
         print(f"Saved: {filename}")
         
+        print(f"Dominant Color: {dom_color}")
         # Display crop only
         cv2.imshow(f'Crop {i+1}', crop)
 
 
         detection_data["items"].append({
             "file_path": filename,
-            "class": item['class'], "color": color_name,})
+            "class": item['class'],
+            "color": dom_color
+            
+            })
         
 else:
     print("No detections - try lower confidence")
-
 # Add this to your existing code (after crop creation loop)
 
 # Load baseline
