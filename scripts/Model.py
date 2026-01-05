@@ -15,7 +15,7 @@ project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
 
 # Test your image
-image_path = "images/red.jpeg"
+image_path = "images/red.png"
 results = model.predict(image_path, confidence=10, overlap=30)
 
 # Print results
@@ -65,7 +65,7 @@ if results.json()['predictions']:
         crop = img[y:y2, x:x2]
         
         # Save crop
-        filename = f"item_{item_num:03d}.jpg"
+        filename = f"images/item_{item_num:03d}.jpg"
         cv2.imwrite(filename, crop)
         print(f"Saved: {filename} - Class: {item['class']}")
         
