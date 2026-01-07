@@ -54,9 +54,15 @@ def main():
         raise RuntimeError(f"Short read: expected {img_len}, got {len(img_data)}")
 
     # ---- 4. Save to file ----
-    out_path = Path("photo.jpg")
+    # Directory of this script
+    BASE_DIR = Path(__file__).resolve().parent
+
+    # images/ subfolder next to the script
+    out_path = BASE_DIR.parent / "images" / "photo.jpg"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
     out_path.write_bytes(img_data)
-    print(f"Saved {out_path.resolve()}")
+    print(f"Saved {out_path}")
 
     ser.close()
 
