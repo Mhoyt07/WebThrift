@@ -6,7 +6,7 @@ PORT = '/dev/cu.usbserial-2110'   # <- your ESP32-CAM USB serial device
 BAUD = 115200
 TIMEOUT = 10
 
-def main():
+def take_photo(image_name):
     ser = serial.Serial(PORT, BAUD, timeout=TIMEOUT)
     time.sleep(2)  # let ESP32 boot
 
@@ -58,7 +58,7 @@ def main():
     BASE_DIR = Path(__file__).resolve().parent
 
     # images/ subfolder next to the script
-    out_path = BASE_DIR.parent / "images" / "photo.jpg"
+    out_path = BASE_DIR.parent / "images" / f"{image_name}.jpg"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     out_path.write_bytes(img_data)
@@ -66,5 +66,7 @@ def main():
 
     ser.close()
 
+    return str(out_path)
+
 if __name__ == "__main__":
-    main()
+    print("Image Path:" , take_photo("photo"))
