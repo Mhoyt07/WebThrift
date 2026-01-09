@@ -3,6 +3,8 @@ import numpy as np
 from roboflow import Roboflow
 from inference_sdk import InferenceHTTPClient 
 from dotenv import load_dotenv
+from datetime import datetime
+from pymongo import MongoClient
 import os
 import json
 
@@ -10,6 +12,7 @@ load_dotenv()
 api_key = os.getenv("API_KEY")
 
 # Load model once at import time (instead of inside main script body)
+# Load pre-trained clothing detection model (auto-downloads ~6MB)
 rf = Roboflow(api_key=api_key)
 project = rf.workspace("giangproject").project("clothing-detection-p8vmn")
 model = project.version(6).model
