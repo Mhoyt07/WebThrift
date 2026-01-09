@@ -2,7 +2,7 @@ import serial
 import time
 from pathlib import Path
 
-PORT = '/dev/cu.usbserial-2110'   # <- your ESP32-CAM USB serial device
+PORT = '/dev/cu.usbserial-21130'   # <- your ESP32-CAM USB serial device
 BAUD = 115200
 TIMEOUT = 10
 
