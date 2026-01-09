@@ -20,6 +20,8 @@ def pipeline(image_name="captured_image"):
         print(f"Detected {len(predictions)} items.")
     else:
         print("No items detected.")
+    
+    return len(predictions)
 
 
 if __name__ == "__main__":
