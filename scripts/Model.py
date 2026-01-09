@@ -65,7 +65,7 @@ def run_model_on_image(image_path, image_name: str, confidence=80, overlap=30, s
             crop = img[y:y2, x:x2]
 
             # Save crop
-            filename = f"images/{image_name}_crop.jpg"
+            filename = f"images/{image_name}_crop_{i}.jpg"
             cv2.imwrite(filename, crop)
             print(f"Saved: {filename} - Class: {item['class']}")
 
@@ -88,7 +88,7 @@ def run_model_on_image(image_path, image_name: str, confidence=80, overlap=30, s
 
 # Optional: allow running this file directly for testing
 if __name__ == "__main__":
-    test_image = "images/captured_image.jpg"
+    test_image = "images/red.png"
     preds = run_model_on_image(
         test_image,
         "captured_image",
