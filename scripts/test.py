@@ -1,23 +1,13 @@
 from datetime import datetime
 from pymongo import MongoClient 
 
+def get_default_collection(): 
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client.clothes_store
+    return db.clothes
 
-client = MongoClient('mongodb://localhost:27017/')
 
-db = client.clothes_store
-
-clothes = db.clothes
-
-clothes.insert_one({
-    "ID_no": 0,
-    "date_added": datetime.now(),
-    "class": "Long Sleeve T-shirt",
-    "size": "L",
-    "image_path": "PruneGreenSweater.jpeg"
-    
-})
-
-def item_insert(ID_no, class_name, size, image_path):
+def item_insert(clothes, ID_no, class_name, size, image_path):
     clothes.insert_one({
         "ID_no": ID_no,
         "date_added": datetime.now(),
@@ -29,9 +19,28 @@ def item_insert(ID_no, class_name, size, image_path):
     
     print(f"Item {ID_no} inserted successfully.")
 
-def item_query(ID_no):
+def check_item(clothes, ID_no):
+    """
+    Check if an item with the given ID_no exists in the collection.
+    
+    :param ID_no: ID associated with a clothing item.
+    """
     item = clothes.find_one({"ID_no": ID_no})
-    if item:
-        print(f"Item found: {item}")
+    return item is not None
+
+def remove_item(clothes, ID_no):
+    """
+    Remove an item with the given ID_no from the collection.
+    
+    :param ID_no: ID associated with a clothing item.
+    """
+    result = clothes.delete_one({"ID_no": ID_no})
+    
+    if not result.acknowledged:
+        raise RuntimeError("Delete was not acknowledged by MongoDB")
+    
+    if result.deleted_count > 0:
+        print(f"Item {ID_no} removed successfully.")
     else:
-        print(f"No item found with ID_no: {ID_no}")
+        print(f"Item {ID_no} not found.")
+
