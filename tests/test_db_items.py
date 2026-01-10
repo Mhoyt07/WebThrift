@@ -1,5 +1,5 @@
 # test_db_items.py
-from test import item_insert, check_item, remove_item
+from db.db_items import item_insert, check_item, remove_item
 
 
 def test_item_insert_and_check(clothes_collection):

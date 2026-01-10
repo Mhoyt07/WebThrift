@@ -1,5 +1,5 @@
-from Model import run_model_on_image
-from capture import take_photo
+from ml.model import run_model_on_image
+from camera.capture import take_photo
 
 def pipeline(image_name="captured_image"):
 

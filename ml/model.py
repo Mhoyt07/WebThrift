@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from datetime import datetime
 from pymongo import MongoClient
 import os
-import json
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
