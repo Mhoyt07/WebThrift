@@ -49,12 +49,12 @@ def init_id_queue(min_id=1, max_id=999999):
         upsert=True,
     )
 
-def get_next_id(clothes, max_tries = 1000):
+def get_next_id(clothes, max_tries=None):
     """
     Docstring for get_next_id
     
     :param clothes: Clothes collection object.
-    :param max_tries: Safety bound to avoid infinite loops.
+    :param max_tries: Safety bound to avoid infinite loops. Defaults to max possible unique IDS. Specify to override.
     :return: Next available unique ID_no.
     :raises RuntimeError: If no unused ID is found after max_tries.
     """
@@ -66,6 +66,9 @@ def get_next_id(clothes, max_tries = 1000):
     current = cfg["next_id"]
     min_id = cfg["min_id"]
     max_id = cfg["max_id"]
+
+    if max_tries is None:
+        max_tries = max_id - min_id + 1
 
     chosen_id = None
     found = False
