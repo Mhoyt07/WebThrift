@@ -9,6 +9,91 @@ def get_default_collection():
     db = client.clothes_store
     return db.clothes
 
+def ensure_unique_id_index():
+    """
+    Ensure that the 'ID_no' field in the clothes collection has a unique index.
+    """
+    clothes = get_default_collection()
+    clothes.create_index("ID_no", unique=True)
+
+def init_db_system():
+    """
+    Initialize the database system by setting up the ID queue.
+    """
+    ensure_unique_id_index()
+    init_id_queue()
+
+
+def get_id_queue_collection():
+    """
+    Return the collection that stores the ID queue configuration document.
+    """
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client.clothes_store
+    return db.id_queue_config
+
+def init_id_queue(min_id=1, max_id=999999):
+    """
+    Initialize the circular ID queue configuration document if it doesn't exist.
+    """
+    cfg = get_id_queue_collection()
+    cfg.update_one(
+        {"_id": "id_queue"},
+        {
+            "$setOnInsert": {
+                "min_id": min_id,
+                "max_id": max_id,
+                "next_id": min_id,
+            }
+        },
+        upsert=True,
+    )
+
+def get_next_id(clothes, max_tries = 1000):
+    """
+    Docstring for get_next_id
+    
+    :param clothes: Clothes collection object.
+    :param max_tries: Safety bound to avoid infinite loops.
+    :return: Next available unique ID_no.
+    :raises RuntimeError: If no unused ID is found after max_tries.
+    """
+    cfd_coll = get_id_queue_collection()
+    cfg = cfd_coll.find_one({"_id": "id_queue"})
+    if cfg is None:
+        raise RuntimeError("ID queue not initialized; call init_db_system() first.")
+
+    current = cfg["next_id"]
+    min_id = cfg["min_id"]
+    max_id = cfg["max_id"]
+
+    chosen_id = None
+    found = False
+    tries = 0
+
+    while tries < max_tries and not found:
+        if not check_item(clothes, current):
+            # Found an unused ID
+            new_next_id = current + 1
+            if new_next_id > max_id:
+                new_next_id = min_id
+
+            cfd_coll.update_one(
+                {"_id": "id_queue"},
+                {"$set": {"next_id": new_next_id}}
+            )
+            chosen_id = current
+            found = True
+        else:
+            # ID already in use, try next
+            current += 1
+            if current < max_id:
+                current = min_id
+            tries += 1
+    if not found:
+        raise RuntimeError("Could not find an unused ID after max tries.")
+    return chosen_id
+
 
 def item_insert(clothes, ID_no, class_name, size, image_path):
     """
