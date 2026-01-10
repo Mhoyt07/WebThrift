@@ -107,8 +107,9 @@ def item_insert(clothes, ID_no, class_name, size, image_path):
     :param class_name: Clothing classification (e.g., shirt, pants).
     :param size: Size of clothing item.
     :param image_path: Path to the image file.
+    :return: Boolean indicating success or failure.
     """
-    clothes.insert_one({
+    result = clothes.insert_one({
         "ID_no": ID_no,
         "date_added": datetime.now(),
         "class": class_name,
@@ -117,7 +118,7 @@ def item_insert(clothes, ID_no, class_name, size, image_path):
     })
     
     
-    print(f"Item {ID_no} inserted successfully.")
+    return result.acknowledged
 
 def check_item(clothes, ID_no):
     """
