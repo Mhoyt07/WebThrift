@@ -90,7 +90,7 @@ def get_next_id(clothes, max_tries=None):
         else:
             # ID already in use, try next
             current += 1
-            if current < max_id:
+            if current > max_id:
                 current = min_id
             tries += 1
     if not found:
