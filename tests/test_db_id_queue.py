@@ -2,7 +2,7 @@
 import pytest
 from db.db_items import init_id_queue, get_next_id, check_item
 
-
+# checks if initialization is working properly
 def test_init_id_queue_creates_config(id_queue_collection):
     init_id_queue(min_id=10, max_id=12)
 
@@ -12,7 +12,7 @@ def test_init_id_queue_creates_config(id_queue_collection):
     assert cfg["max_id"] == 12
     assert cfg["next_id"] == 10
 
-
+# checks if inserting is working properly 
 def test_get_next_id_returns_first_available(
     clothes_collection,
     id_queue_collection,
@@ -31,7 +31,7 @@ def test_get_next_id_returns_first_available(
     assert next_id4 == 4
     assert next_id5 == 5
     
-
+# checks if queue will skip an id if it is filled already
 def test_get_next_id_skips_existing_ids(
     clothes_collection,
     id_queue_collection,
@@ -48,11 +48,8 @@ def test_get_next_id_skips_existing_ids(
     assert next_id == 3
     assert next_id2 == 5
 
-
-def test_get_next_id_raises_when_all_ids_used(
-    clothes_collection,
-    id_queue_collection,
-):
+# checks if error is raised when all ids are filled
+def test_get_next_id_raises_when_all_ids_used(clothes_collection, id_queue_collection):
     init_id_queue(min_id=1, max_id=2)
 
     clothes_collection.insert_many([
@@ -62,3 +59,5 @@ def test_get_next_id_raises_when_all_ids_used(
 
     with pytest.raises(RuntimeError):
         get_next_id(clothes_collection)
+
+# checks if the queue wraps around correctly
