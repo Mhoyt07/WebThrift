@@ -13,10 +13,7 @@ def test_init_id_queue_creates_config(id_queue_collection):
     assert cfg["next_id"] == 10
 
 # checks if inserting is working properly 
-def test_get_next_id_returns_first_available(
-    clothes_collection,
-    id_queue_collection,
-):
+def test_get_next_id_returns_first_available(clothes_collection, id_queue_collection,):
     init_id_queue(min_id=1, max_id=5)
 
     next_id1 = get_next_id(clothes_collection)
@@ -32,10 +29,7 @@ def test_get_next_id_returns_first_available(
     assert next_id5 == 5
     
 # checks if queue will skip an id if it is filled already
-def test_get_next_id_skips_existing_ids(
-    clothes_collection,
-    id_queue_collection,
-):
+def test_get_next_id_skips_existing_ids(clothes_collection, id_queue_collection):
     init_id_queue(min_id=1, max_id=5)
 
     clothes_collection.insert_one({"ID_no": 1})
@@ -59,5 +53,3 @@ def test_get_next_id_raises_when_all_ids_used(clothes_collection, id_queue_colle
 
     with pytest.raises(RuntimeError):
         get_next_id(clothes_collection)
-
-# checks if the queue wraps around correctly
