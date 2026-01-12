@@ -98,7 +98,7 @@ def get_next_id(clothes, max_tries=None):
     return chosen_id
 
 
-def item_insert(clothes, ID_no, class_name, size, image_path):
+def item_insert(clothes, class_name, size, image_path):
     """
     Docstring for item_insert
     
@@ -108,7 +108,16 @@ def item_insert(clothes, ID_no, class_name, size, image_path):
     :param size: Size of clothing item.
     :param image_path: Path to the image file.
     :return: Boolean indicating success or failure.
+    :raises RuntimeError: If the ID queue is not initialized.
     """
+    
+    cfg_coll = get_id_queue_collection()
+    cfg = cfg_coll.find_one({"_id": "id_queue"})
+    if cfg is None:
+        raise RuntimeError("ID queue not initialized; call init_db_system() first.")
+    
+    ID_no = get_next_id(clothes)
+    
     result = clothes.insert_one({
         "ID_no": ID_no,
         "date_added": datetime.now(),
@@ -131,17 +140,28 @@ def check_item(clothes, ID_no):
 
 def remove_item(clothes, ID_no):
     """
-    Remove an item with the given ID_no from the collection.
-    
-    :param ID_no: Unique ID associated with a clothing item.
-    """
-    result = clothes.delete_one({"ID_no": ID_no})
-    
-    if not result.acknowledged:
-        raise RuntimeError("Delete was not acknowledged by MongoDB")
-    
-    if result.deleted_count > 0:
-        print(f"Item {ID_no} removed successfully.")
-    else:
-        print(f"Item {ID_no} not found.")
+    Remove an item from the clothes collection.
 
+    :param clothes: Clothes collection object.
+    :param ID_no: Unique ID associated with a clothing item.
+    :raises RuntimeError: If the ID queue is not initialized.
+    """
+    # 1️⃣ Ensure the ID queue is initialized
+    cfg_coll = get_id_queue_collection()
+    cfg = cfg_coll.find_one({"_id": "id_queue"})
+    if cfg is None:
+        raise RuntimeError("ID queue not initialized; cannot remove item safely.")
+
+    # 2️⃣ Attempt to delete the item
+    result = clothes.delete_one({"ID_no": ID_no})
+
+    if not result.acknowledged:
+        raise RuntimeError("Delete was not acknowledged by MongoDB.")
+
+    if result.deleted_count == 0:
+        # Item did not exist
+        print(f"Item {ID_no} not found.")
+        return False
+    if result.deleted_count > 0:
+        print(f"Item {ID_no} removed.")
+        return True
