@@ -1,27 +1,36 @@
-# test_db_items.py
-from db.db_items import item_insert, check_item, remove_item
+import pytest
+from db.db_items import init_id_queue, item_insert, check_item, remove_item
 
-
-def test_item_insert_and_check(clothes_collection):
-    item_insert(clothes_collection, 1, "T-shirt", "M", "image.jpg")
+def test_item_insert_and_check(clothes_collection, id_queue_collection):
+    # Pass cfg_collection explicitly
+    init_id_queue(min_id=1, max_id=10, cfg_collection=id_queue_collection)
+    
+    item_insert(clothes_collection, "T-shirt", "M", "image.jpg", cfg_collection=id_queue_collection)
 
     assert check_item(clothes_collection, 1) is True
     assert check_item(clothes_collection, 999) is False
 
 
-def test_remove_item_deletes_existing(clothes_collection, capsys):
-    item_insert(clothes_collection, 2, "Sweater", "L", "sweater.jpg")
+def test_remove_item_deletes_existing(clothes_collection, id_queue_collection, capsys):
+    init_id_queue(min_id=1, max_id=10, cfg_collection=id_queue_collection)
+    
+    item_insert(clothes_collection, "Sweater", "L", "sweater.jpg", cfg_collection=id_queue_collection)
+    item_insert(clothes_collection, "Jeans", "XL", "jeans.jpg", cfg_collection=id_queue_collection)
+    
     assert check_item(clothes_collection, 2) is True
 
-    remove_item(clothes_collection, 2)
+    remove_item(clothes_collection, 2, cfg_collection=id_queue_collection)
 
     assert check_item(clothes_collection, 2) is False
     out = capsys.readouterr().out
-    assert "removed successfully" in out
+    assert "removed" in out
 
 
-def test_remove_item_not_found_prints_message(clothes_collection, capsys):
-    remove_item(clothes_collection, 123)
+def test_remove_item_not_found_prints_message(clothes_collection, id_queue_collection, capsys):
+    init_id_queue(min_id=1, max_id=10, cfg_collection=id_queue_collection)
+    
+    result = remove_item(clothes_collection, 123, cfg_collection=id_queue_collection)
 
+    assert result is False
     out = capsys.readouterr().out
     assert "not found" in out
