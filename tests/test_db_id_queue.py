@@ -49,11 +49,10 @@ def test_get_next_id_raises_when_all_ids_used(clothes_collection, id_queue_colle
         {"ID_no": 2},
     ])
 
-    import pytest
     with pytest.raises(RuntimeError):
         get_next_id(clothes_collection, cfg_collection=id_queue_collection)
 
-
+# checks if the queue works circularly after deletions
 def test_get_next_id_circular_wraparound(clothes_collection, id_queue_collection):
     init_id_queue(min_id=1, max_id=3, cfg_collection=id_queue_collection)
     
