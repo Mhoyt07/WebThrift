@@ -1,45 +1,32 @@
+# conftest.py
 import pytest
 from pymongo import MongoClient
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mongo_client():
-    """
-    Provide a MongoDB client for tests.
-    """
+    """Provides a MongoClient connected to localhost."""
     client = MongoClient("mongodb://localhost:27017/")
     yield client
     client.close()
 
 
-@pytest.fixture
-def clothes_collection(mongo_client):
-    """
-    Provide a fresh clothes collection for each test.
-    """
-    db = mongo_client["clothes_store"]
-    collection = db["clothes"]
-
-    # Ensure clean state
-    collection.delete_many({})
-
-    yield collection
-
-    # Cleanup
-    collection.delete_many({})
+@pytest.fixture(scope="function")
+def test_db(mongo_client):
+    """Provides a fresh test database for each test function."""
+    db = mongo_client.test_clothes_store
+    # Ensure database is clean
+    mongo_client.drop_database("test_clothes_store")
+    yield db
+    mongo_client.drop_database("test_clothes_store")  # Clean up after test
 
 
-@pytest.fixture
-def id_queue_collection(mongo_client):
-    """
-    Provide a fresh ID queue config collection for each test.
-    """
-    db = mongo_client["clothes_store"]
-    collection = db["id_queue_config"]
+@pytest.fixture(scope="function")
+def clothes_collection(test_db):
+    """Provides the clothes collection for tests."""
+    return test_db.clothes
 
-    # Ensure clean state
-    collection.delete_many({})
 
-    yield collection
-
-    # Cleanup
-    collection.delete_many({})
+@pytest.fixture(scope="function")
+def id_queue_collection(test_db):
+    """Provides the ID queue config collection for tests."""
+    return test_db.id_queue_config
