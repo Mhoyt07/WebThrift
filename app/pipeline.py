@@ -31,7 +31,7 @@ def pipeline(image_name="captured_image"):
         item_class = predictions[0]['class']
 
         # Insert item into database
-        insert_success = item_insert(clothes, ID_no, item_class, "M", image_path)
+        insert_success = item_insert(clothes, item_class, "M", image_path)
 
     elif predictions > 1:
         print(f"{predictions} items detected.")
