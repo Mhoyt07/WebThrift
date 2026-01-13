@@ -25,6 +25,9 @@ def get_id_queue_collection(db=None):
 def init_id_queue(min_id=1, max_id=999999, cfg_collection=None):
     """
     Initialize the circular ID queue configuration document if it doesn't exist.
+    :param min_id: Minimum ID in the queue.
+    :param max_id: Maximum ID in the queue.
+    :param cfg_collection: ID queue configuration collection, leave empty to use default.
     """
     if cfg_collection is None:
         cfg_collection = get_id_queue_collection()
@@ -37,6 +40,9 @@ def init_id_queue(min_id=1, max_id=999999, cfg_collection=None):
 def get_next_id(clothes, max_tries=None, cfg_collection=None):
     """
     Get the next available ID from the queue.
+    :param clothes: Clothes collection object.
+    :param max_tries: Maximum number of attempts to find an unused ID.
+    :param cfg_collection: ID queue configuration collection, leave empty to use default.
     """
     if cfg_collection is None:
         cfg_collection = get_id_queue_collection()
@@ -83,6 +89,11 @@ def get_next_id(clothes, max_tries=None, cfg_collection=None):
 def item_insert(clothes, class_name, size, image_path, cfg_collection=None):
     """
     Insert a clothing item. Returns True if successful.
+    :param clothes: Clothes collection object.
+    :param class_name: Clothing classification (e.g., shirt, pants).
+    :param size: Size of clothing 
+    :param image_path: Path to the image file.
+    :param cfg_collection: ID queue configuration collection, leave empty to use default.
     """
     if cfg_collection is None:
         cfg_collection = get_id_queue_collection()
@@ -100,11 +111,18 @@ def item_insert(clothes, class_name, size, image_path, cfg_collection=None):
     return result.acknowledged
 
 def check_item(clothes, ID_no):
+    """
+    Check if an item with the given ID_no exists in the collection.
+    :param ID_no: Unique ID associated with a clothing item.
+    """
     return clothes.find_one({"ID_no": ID_no}) is not None
 
 def remove_item(clothes, ID_no, cfg_collection=None):
     """
     Remove an item from the collection. Returns True if removed, False if not found.
+    :param clothes : Clothes collection object.
+    :param ID_no: Unique ID associated with a clothing item.
+    :param cfg_collection: ID queue configuration collection, leave empty to use default.
     """
     if cfg_collection is None:
         cfg_collection = get_id_queue_collection()

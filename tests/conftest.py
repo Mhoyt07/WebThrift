@@ -14,10 +14,9 @@ def mongo_client():
 def test_db(mongo_client):
     """Provides a fresh test database for each test function."""
     db = mongo_client.test_clothes_store
-    # Ensure database is clean
     mongo_client.drop_database("test_clothes_store")
     yield db
-    mongo_client.drop_database("test_clothes_store")  # Clean up after test
+    mongo_client.drop_database("test_clothes_store") 
 
 
 @pytest.fixture(scope="function")
