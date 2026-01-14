@@ -1,5 +1,16 @@
 from datetime import datetime
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
+
+
+def get_id_queue_collection(db=None):
+    """
+    Return the collection that stores the ID queue configuration document.
+    If db is provided, use that database (for testing).
+    """
+    if db is None:
+        client = MongoClient('mongodb://localhost:27017/')
+        db = client.clothes_store
+    return db.id_queue_config
 
 def get_default_collection(db=None):
     """
@@ -11,15 +22,25 @@ def get_default_collection(db=None):
         db = client.clothes_store
     return db.clothes
 
-def get_id_queue_collection(db=None):
+def ensure_unique_id_index():
     """
-    Return the collection that stores the ID queue configuration document.
-    If db is provided, use that database (for testing).
+    Ensure that the 'ID_no' field in the clothes collection has a unique index.
     """
-    if db is None:
-        client = MongoClient('mongodb://localhost:27017/')
-        db = client.clothes_store
-    return db.id_queue_config
+    clothes = get_default_collection()
+    try:
+        clothes.create_index("ID_no", unique=True)
+    except errors.DuplicateKeyError:
+        # If there are duplicates, drop the collection and try again
+        clothes.drop()
+        clothes.create_index("ID_no", unique=True)
+
+def init_db_system():
+    """
+    Initialize the database system by setting up the ID queue.
+    """
+    get_default_collection()
+    ensure_unique_id_index()
+    init_id_queue()
 
 
 def init_id_queue(min_id=1, max_id=999999, cfg_collection=None):
