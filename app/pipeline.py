@@ -22,7 +22,7 @@ def pipeline(image_name="captured_image"):
     )
 
     # Step 3: Process predictions as needed
-    if predictions == 1:
+    if len(predictions) == 1:
         clothes = get_default_collection()
         # Get next available ID 
         ID_no = get_next_id(clothes)
@@ -33,7 +33,7 @@ def pipeline(image_name="captured_image"):
         # Insert item into database
         insert_success = item_insert(clothes, item_class, "M", image_path)
 
-    elif predictions > 1:
+    elif len(predictions) > 1:
         print(f"{predictions} items detected.")
 
     else:
