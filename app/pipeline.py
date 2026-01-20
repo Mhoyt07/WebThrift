@@ -26,9 +26,6 @@ def pipeline(image_name="captured_image", image_path=None, db_name=None):
     # Step 3: Process predictions as needed
     if len(predictions) == 1:
         clothes = get_default_collection(db=db_name)
-        # Get next available ID 
-        ID_no = get_next_id(clothes)
-
         # Getting item class
         item_class = predictions[0]['class']
 
