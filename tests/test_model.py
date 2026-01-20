@@ -17,7 +17,6 @@ def test_model_clothing_classification(image_path, expected_classes, test_db):
         image_name="test_image",
         confidence=10,
         overlap=30,
-        show_windows=False,
     )
     # model tests
     assert len(predictions) >= 1, "No detections returned by Roboflow"
