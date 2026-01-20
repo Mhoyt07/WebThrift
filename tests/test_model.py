@@ -27,3 +27,5 @@ def test_model_clothing_classification(image_path, expected_classes, test_db):
         f"Expected one of {expected_classes}, "
         f"but got {detected_classes}"
     )
+    assert predictions[0]['confidence'] >= 0.4
+    
