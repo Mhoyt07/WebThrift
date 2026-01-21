@@ -3,7 +3,7 @@ from db.db_items import get_next_id, get_default_collection, item_insert
 
 
 # wsg pull request, this change to function param is for testing
-def pipeline(image_name="captured_image", image_path=None, db_name=None):
+def pipeline(image_name="captured_image", image_path=None, db_name=None, predictions=None):
 
     # Defaults insert success to False
     insert_success = False
@@ -15,13 +15,17 @@ def pipeline(image_name="captured_image", image_path=None, db_name=None):
         image_path = take_photo(image_name)
 
     # Step 2: Run model on captured image
-    predictions = run_model_on_image(
-        image_path,
-        image_name,
-        confidence=10,
-        overlap=30,
-        show_windows=False,
-    )
+    if predictions is not None: 
+        print("Using provided predictions for testing.")
+    if predictions is None:    
+        predictions = run_model_on_image(
+            image_path,
+            image_name,
+            confidence=10,
+            overlap=30,
+            show_windows=False,
+        )
+    
 
     # Step 3: Process predictions as needed
     if len(predictions) == 1:
