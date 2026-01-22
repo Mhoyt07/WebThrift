@@ -5,7 +5,10 @@ from ml.model import run_model_on_image
 @pytest.mark.parametrize(
     "image_path, expected_classes",
     [
-        ("images/item003.jpeg", ["t-shirt", "shirt"]),
+        ("images/test_item001.jpeg", ["shirt"]),
+        ("images/test_item002.jpeg", ["shirt"]),
+        ("images/test_item003.jpeg", ["t-shirt"]),
+        ("images/test_item004.jpeg", ["sweater", "shirt", "long sleeve"]),
     ]
 )
 def test_model_clothing_classification(image_path, expected_classes, test_db):
