@@ -1,7 +1,7 @@
 import pytest
 from app.pipeline import pipeline
 
-
+# For adding future tests, just add more tuples to the list below
 @pytest.mark.parametrize(
     "image_path, test_predictions, expected_classes, expected_sizes",
     [
