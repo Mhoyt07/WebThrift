@@ -15,8 +15,6 @@ def pipeline(image_name="captured_image", image_path=None, db_name=None, predict
         image_path = take_photo(image_name)
 
     # Step 2: Run model on captured image
-    if predictions is not None: 
-        print("Using provided predictions for testing.")
     if predictions is None:    
         predictions = run_model_on_image(
             image_path,
