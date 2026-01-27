@@ -58,10 +58,13 @@ def run_model_on_image(image_path, image_name: str, confidence=80, overlap=30, s
                 continue
 
             # Boundary checking
-            x = max(0, x)
-            y = max(0, y)
-            x2 = min(img.shape[1], x + w)
-            y2 = min(img.shape[0], y + h)
+            x_pad = int(0.15 * w)
+            y_pad = int(0.20 * h)
+            
+            x = max(0, x - x_pad)
+            y = max(0, y - y_pad)
+            x2 = min(img.shape[1], x + w + 2 * x_pad)
+            y2 = min(img.shape[0], y + h + 2 * y_pad)
 
             # Just crop - no drawing
             crop = img[y:y2, x:x2]
