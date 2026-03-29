@@ -58,10 +58,13 @@ def run_model_on_image(image_path, image_name: str, confidence=80, overlap=30, s
                 continue
 
             # Boundary checking
-            x = max(0, x)
-            y = max(0, y)
-            x2 = min(img.shape[1], x + w)
-            y2 = min(img.shape[0], y + h)
+            x_pad = int(0.15 * w)
+            y_pad = int(0.20 * h)
+            
+            x = max(0, x - x_pad)
+            y = max(0, y - y_pad)
+            x2 = min(img.shape[1], x + w + 2 * x_pad)
+            y2 = min(img.shape[0], y + h + 2 * y_pad)
 
             # Just crop - no drawing
             crop = img[y:y2, x:x2]
@@ -71,6 +74,8 @@ def run_model_on_image(image_path, image_name: str, confidence=80, overlap=30, s
             cv2.imwrite(filename, crop)
             print(f"Saved: {filename} - Class: {item['class']}")
 
+            crop_info = {"filepath": filename, "class": item["class"], "confidence": item["confidence"], "x1": x, "y1": y, "x2": x2, "y2": y2, "width": w, "height": h}
+            
             # Display crop only (optional)
             if show_windows:
                 cv2.imshow(f"Crop {i+1} - {item['class']}", crop)
@@ -85,7 +90,7 @@ def run_model_on_image(image_path, image_name: str, confidence=80, overlap=30, s
         cv2.destroyAllWindows()
 
     # Return useful info to the caller (pipeline.py)
-    return predictions
+    return predictions, crop_info
 
 
 # Optional: allow running this file directly for testing
